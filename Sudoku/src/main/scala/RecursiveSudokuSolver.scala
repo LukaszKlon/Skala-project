@@ -7,7 +7,7 @@ import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class RecursiveSudokuSolver {
+class RecursiveSudokuSolver extends solver {
     def solve(sudoku: Sudoku, useActors: Boolean): Sudoku = {
         if (useActors) {
             solveWithActors(sudoku)

@@ -1,6 +1,6 @@
 import akka.actor.{Actor, Props}
 
-class ActorRecursiveSolve extends Actor {
+class ActorRecursiveSolve extends Actor{
     def receive: Receive = {
         case sudoku: Sudoku =>
             val solver = new RecursiveSudokuSolver
