@@ -3,7 +3,7 @@ object SudokuApp {
         val sudokuLoader = new SudokuLoader()
         val sudokuSolver = new SudokuSolver()
         val recursiveSudoku = new RecursiveSudokuSolver()
-        val startSudoku = sudokuLoader.sudokuLoad("C:\\Users\\mateu\\Desktop\\stuff\\programowanie\\scala-projekt\\sudoku\\src\\main\\scala\\text")
+        val startSudoku = sudokuLoader.sudokuLoad("C:\\Users\\klonl\\OneDrive\\Pulpit\\STUDIA\\semestr4\\Scala\\Skala-project\\Sudoku\\src\\main\\scala\\sudoku\\s1.txt")
         val solvedSudoku = sudokuSolver.solve(startSudoku, useActors = true)
         val recursiveSolvedSudoku = recursiveSudoku.solve(startSudoku, useActors = true)
 
