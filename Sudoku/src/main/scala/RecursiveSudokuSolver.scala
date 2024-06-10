@@ -1,8 +1,20 @@
-class RecursiveSudokuSolver {
+import akka.actor.{Actor, Props, ActorSystem}
+import akka.pattern.ask
+import akka.routing.RoundRobinPool
+import akka.util.Timeout
 
-    def solve(sudoku: Sudoku): Sudoku = {
-        val copySudoku = sudoku.cloneSudoku
-        if (solveHelper(copySudoku)) copySudoku else null
+import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class RecursiveSudokuSolver {
+    def solve(sudoku: Sudoku, useActors: Boolean): Sudoku = {
+        if (useActors) {
+            solveWithActors(sudoku)
+        } else {
+            val copySudoku = sudoku.cloneSudoku
+            if (solveHelper(copySudoku)) copySudoku else null
+        }
     }
 
     private def solveHelper(sudoku: Sudoku): Boolean = {
@@ -49,5 +61,39 @@ class RecursiveSudokuSolver {
             }
         }
         true
+    }
+
+    private def solveWithActors(sudoku: Sudoku): Sudoku = {
+        implicit val timeout: Timeout = Timeout(30.seconds)
+        val system = ActorSystem("RecursiveSudokuSolverSystem")
+        val actorPool = system.actorOf(RoundRobinPool(10).props(ActorRecursiveSolve.props), "recursiveSudokuSolverPool")
+
+        val promise = Promise[(Boolean, Sudoku)]()
+
+        def submitTask(): Unit = {
+            val futureResult: Future[(Boolean, Sudoku)] = (actorPool ? sudoku.cloneSudoku).mapTo[(Boolean, Sudoku)]
+            futureResult.onComplete {
+                case scala.util.Success((true, solvedSudoku)) =>
+                    promise.trySuccess((true, solvedSudoku))
+                case scala.util.Success((false, _)) =>
+                    submitTask() // Retry if not solved
+                case scala.util.Failure(_) =>
+                    submitTask() // Retry on failure
+            }
+        }
+
+        // Submit initial batch of tasks
+        for (_ <- 1 to 10) {
+            submitTask()
+        }
+
+        val solvedResult = Await.result(promise.future, timeout.duration)
+        system.terminate()
+
+        if (solvedResult._1) {
+            solvedResult._2
+        } else {
+            null
+        }
     }
 }
