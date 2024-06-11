@@ -7,7 +7,7 @@ import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SudokuSolver {
+class SudokuSolver extends solver {
     private val simulatedAnneling = new SimulatedAnneling(1.2, 0.999, 0.01)
 
     def solve(startSudoku: Sudoku, useActors: Boolean): Sudoku = {
